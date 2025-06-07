@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - PetShop Online</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+</head>
+<body>
+    <header>
+        <h1>Nossos Produtos <span class="icon">🍖</span></h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="products.html">Produtos</a></li>
+                <li><a href="cart.html">🛒 Carrinho</a></li>
+                <li id="nav-auth">
+                    <a href="login.html">Login</a> | <a href="register.html">Cadastro</a>
+                </li>
+                <li id="nav-user" style="display: none;">
+                    Olá, <span id="user-name"></span>! | <a href="#" id="logout-button">Logout</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div id="global-message-container"></div>
+
+        <div class="filters" style="margin-bottom: 30px; background-color: white; padding: 20px; border-radius: var(--border-radius); box-shadow: var(--box-shadow);">
+            <label for="category-filter" style="font-weight: 500; margin-right: 15px;">Filtrar por Categoria:</label>
+            <select id="category-filter" style="padding: 10px; border-radius: 8px; border: 1px solid var(--medium-gray);">
+                <option value="todos">Todas</option>
+                <option value="gato">Gato 😺</option>
+                <option value="cachorro">Cachorro 🐶</option>
+                <option value="geral">Geral 🐾</option>
+            </select>
+        </div>
+
+        <div id="loading-message" style="display: none; text-align: center; padding: 20px;">
+            Carregando produtos...
+        </div>
+        <div id="products-grid" class="products-grid">
+            </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 PetShop Online.</p>
+    </footer>
+
+   <script src="js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+</body>
+</html>
