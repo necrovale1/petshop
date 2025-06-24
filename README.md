@@ -1,6 +1,6 @@
 # 🐾 Projeto PetShop - PW2
 
-📚 **Disciplina**: Programação Web 2 (PW2)
+📚 **Disciplina**: Programação Web 2
 👨‍🏫 **Professores**: Thiago e Caê
 📅 **Entrega**: 27 de junho de 2025 até 23:59
 
@@ -28,17 +28,3 @@ Este projeto foi desenvolvido como parte da matéria de PW2, com o objetivo de p
 * JavaScript
 * Banco de Dados (MySQL ou SQLite)
 
----
-
-## 📁 Como executar
-
-1. Abra o projeto em seu navegador ou servidor local (como XAMPP).
-2. Importe o banco de dados (arquivo `.sql` incluído).
-3. Navegue pelas páginas e teste as funcionalidades.
-
----
-
-## 👨‍🏫 Professores
-
-* Thiago Rariz
-* Caê
