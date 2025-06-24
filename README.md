@@ -1,37 +1,52 @@
-🐾 Projeto PetShop - PW2
-📚 Disciplina: Programação Web 2 (PW2)
-👨‍🏫 Professores: Thiago e Caê
-📅 Entrega: 27 de junho de 2025 até 23:59
+Perfeito! Aqui está uma versão mais simples e direta do `README.md`, adequada para um projeto da disciplina **PW2 - Programação Web 2**:
 
-📌 Descrição
-Este projeto foi desenvolvido como parte da matéria de PW2, com o objetivo de praticar a implementação de um sistema web completo usando HTML, CSS, JavaScript e banco de dados. O tema escolhido foi um PetShop.
+---
 
-🧑‍💻 O que foi feito
-💻 Código gerado foi implementado e ajustado
+# 🐾 Projeto PetShop - PW2
 
-🖼️ Imagens foram adicionadas conforme instruções
+📚 **Disciplina**: Programação Web 2 (PW2)
+👨‍🏫 **Professores**: Thiago e Caê
+📅 **Entrega**: 27 de junho de 2025 até 23:59
 
-🎨 CSS foi melhorado com personalização do visual
+---
 
-💾 Banco de dados foi criado e incluído no projeto
+## 📌 Descrição
 
-🛠️ Tecnologias usadas
-HTML
+Este projeto foi desenvolvido como parte da matéria de PW2, com o objetivo de praticar a implementação de um sistema web completo usando HTML, CSS, JavaScript e banco de dados. O tema escolhido foi um **PetShop**.
 
-CSS
+---
 
-JavaScript
+## 🧑‍💻 O que foi feito
 
-Banco de Dados (MySQL ou SQLite)
+* 💻 Código gerado foi implementado e ajustado
+* 🖼️ Imagens foram adicionadas conforme instruções
+* 🎨 CSS foi melhorado com personalização do visual
+* 💾 Banco de dados foi criado e incluído no projeto
 
-📁 Como executar
-Abra o projeto em seu navegador ou servidor local (como XAMPP).
+---
 
-Importe o banco de dados (arquivo .sql incluído).
+## 🛠️ Tecnologias usadas
 
-Navegue pelas páginas e teste as funcionalidades.
+* HTML
+* CSS
+* JavaScript
+* Banco de Dados (MySQL ou SQLite)
 
-👨‍🏫 Professores
-Thiago
+---
 
-Caê
+## 📁 Como executar
+
+1. Abra o projeto em seu navegador ou servidor local (como XAMPP).
+2. Importe o banco de dados (arquivo `.sql` incluído).
+3. Navegue pelas páginas e teste as funcionalidades.
+
+---
+
+## 👨‍🏫 Professores
+
+* Thiago
+* Caê
+
+---
+
+Se quiser, posso gerar um modelo base de projeto ou ajudar a organizar os arquivos. Deseja isso?
