@@ -1,7 +1,3 @@
-Perfeito! Aqui está uma versão mais simples e direta do `README.md`, adequada para um projeto da disciplina **PW2 - Programação Web 2**:
-
----
-
 # 🐾 Projeto PetShop - PW2
 
 📚 **Disciplina**: Programação Web 2 (PW2)
@@ -44,9 +40,5 @@ Este projeto foi desenvolvido como parte da matéria de PW2, com o objetivo de p
 
 ## 👨‍🏫 Professores
 
-* Thiago
+* Thiago Rariz
 * Caê
-
----
-
-Se quiser, posso gerar um modelo base de projeto ou ajudar a organizar os arquivos. Deseja isso?
