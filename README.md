@@ -1,8 +1,8 @@
 # 🐾 Projeto PetShop - PW2
 
-📚 **Disciplina**: Programação Web 2
-👨‍🏫 **Professores**: Thiago e Caê
-📅 **Entrega**: 27 de junho de 2025 até 23:59
+* 📚 **Disciplina**: Programação Web 2
+* 👨‍🏫 **Professores**: Thiago e Caê
+* 📅 **Entrega**: 27 de junho de 2025 até 23:59
 
 ---
 
