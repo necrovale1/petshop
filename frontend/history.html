@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Compras - PetShop Online</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Seu Histórico de Compras <span class="icon">📋</span></h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="products.html">Produtos</a></li>
+                <li><a href="cart.html">🛒 Carrinho</a></li>
+                <li id="nav-auth">
+                    <a href="login.html">Login</a> | <a href="register.html">Cadastro</a>
+                </li>
+                <li id="nav-user" style="display: none;">
+                    Olá, <span id="user-name"></span>! | <a href="history.html">Meus Pedidos</a> | <a href="#" id="logout-button">Logout</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div id="global-message-container"></div>
+        <div id="order-history-container">
+            <p>Carregando seu histórico de compras...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 PetShop Online.</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

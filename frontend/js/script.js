@@ -2,66 +2,294 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funções globais ou inicializações
     updateNav(); // Atualiza a navegação com base no login
 
-    // --- Página de Produtos (products.html) ---
-    if (document.getElementById('products-grid')) {
-        loadProducts(); // Carrega todos os produtos inicialmente
-        const categoryFilter = document.getElementById('category-filter');
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', () => loadProducts(categoryFilter.value));
+    // --- Página de Checkout ---
+    if (document.getElementById('checkout-form')) {
+        checkSessionAndLoadCheckout();
+        setupPaymentMethodToggle(); // Cuida da troca entre Cartão/PIX
+        setupInputMasks(); // Aplica máscaras nos inputs do cartão
+        setupShippingCalculator(); // Lógica do cálculo de frete
+        
+        const placeOrderForm = document.getElementById('checkout-form');
+        placeOrderForm.addEventListener('submit', handlePlaceOrder);
+
+        const pixModal = document.getElementById('pix-modal');
+        if (pixModal) {
+            pixModal.querySelector('.close-modal-btn').addEventListener('click', () => pixModal.classList.remove('show'));
+            document.getElementById('confirm-pix-payment-btn').addEventListener('click', () => {
+                pixModal.classList.remove('show');
+                submitOrder();
+            });
         }
     }
 
-    // --- Formulário de Cadastro (register.html) ---
+    // --- Outras Páginas (sem alterações na lógica de inicialização) ---
+    if (document.getElementById('products-grid')) loadProducts();
+    if (document.querySelector('.products-preview-grid')) loadFeaturedProducts();
+    if (document.getElementById('order-history-container')) loadOrderHistory();
     const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-    }
-
-    // --- Formulário de Login (login.html) ---
+    if (registerForm) registerForm.addEventListener('submit', handleRegister);
     const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-
-    // --- Página do Carrinho (cart.html) ---
-    if (document.getElementById('cart-items-container')) {
-        loadCart();
-    }
-
-    // --- Página de Checkout (checkout.html) ---
-    if (document.getElementById('checkout-form')) {
-        checkSessionAndLoadCheckout(); // Verifica a sessão antes de carregar
-    }
-    const placeOrderForm = document.getElementById('checkout-form'); // Renomeando para evitar conflito
-    if(placeOrderForm) {
-        placeOrderForm.addEventListener('submit', handlePlaceOrder);
-    }
-
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    if (document.getElementById('cart-items-container')) loadCart();
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) logoutButton.addEventListener('click', handleLogout);
 });
 
-function displayMessage(type, text, containerId = 'message-container') {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = `<div class="message ${type}">${text}</div>`;
-        setTimeout(() => container.innerHTML = '', 5000); // Limpa após 5s
+let cartSubtotal = 0;
+let shippingCost = 0;
+
+// --- FUNÇÕES DE SIMULAÇÃO DO CHECKOUT ---
+
+function setupShippingCalculator() {
+    const btn = document.getElementById('calculate-shipping-btn');
+    const zipInput = document.getElementById('zipcode');
+    const resultsDiv = document.getElementById('shipping-results');
+
+    if(!btn) return;
+
+    btn.addEventListener('click', () => {
+        const cep = zipInput.value.replace(/\D/g, ''); // Remove não-números
+        if (cep.length !== 8) {
+            resultsDiv.innerHTML = `<span style="color: var(--error-color);">CEP inválido. Digite 8 números.</span>`;
+            return;
+        }
+
+        resultsDiv.innerHTML = 'Calculando...';
+        setTimeout(() => {
+            shippingCost = 25.50; // Valor fixo simulado
+            resultsDiv.innerHTML = `<span>SEDEX - Entrega em 3 dias úteis: <strong>R$ ${shippingCost.toFixed(2).replace('.', ',')}</strong></span>`;
+            updateTotals();
+        }, 1500);
+    });
+}
+
+function updateTotals() {
+    const subtotalEl = document.getElementById('summary-subtotal');
+    const shippingEl = document.getElementById('summary-shipping');
+    const shippingLineEl = document.getElementById('shipping-line');
+    const totalEl = document.getElementById('summary-total');
+    
+    if(!subtotalEl || !shippingEl || !shippingLineEl || !totalEl) return;
+
+    const total = cartSubtotal + shippingCost;
+    
+    subtotalEl.textContent = `R$ ${cartSubtotal.toFixed(2).replace('.', ',')}`;
+    shippingEl.textContent = `R$ ${shippingCost.toFixed(2).replace('.', ',')}`;
+    totalEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+    if (shippingCost > 0) {
+        shippingLineEl.style.display = 'flex';
     }
 }
 
-// Atualiza a barra de navegação (Login/Logout, nome do usuário)
+function setupInputMasks() {
+    const cardNumberInput = document.getElementById('card-number');
+    const cardExpiryInput = document.getElementById('card-expiry');
+    const cardCvcInput = document.getElementById('card-cvc');
+    const logoContainer = document.getElementById('card-logo-container');
+    
+    if(!cardNumberInput) return; // Só executa se estiver na página de checkout
+
+    const visaLogo = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.64,7.82,16.71,16.18h-2.5L11.75,7.82H14.2l1.45,5.64.45,2.13h.1a3.56,3.56,0,0,1,.45-2.13L18.14,7.82Z"/><path d="M8.28,10.65a2.14,2.14,0,0,0-1.8-.92,2.56,2.56,0,0,0-2.67,2.8,2.5,2.5,0,0,0,2.67,2.83,2.06,2.06,0,0,0,1.81-.94l.2, .84h2.1V7.82H8.88Zm-1.6,3a1,1,0,0,1-1.08-1.15.93.93,0,0,1,1.08-1.15,1,1,0,0,1,1.08,1.15A1,1,0,0,1,6.68,13.65Z"/><path d="M22,7.82h-2.3L18.43,16.18H20.9l.4-1.82h2l.24,1.82H26L24.3,7.82Zm-.9,5.2h-1l.5-3.5Z"/></svg>`;
+
+    cardNumberInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '').substring(0, 16);
+        value = value.replace(/(\d{4})/g, '$1 ').trim();
+        e.target.value = value;
+        logoContainer.innerHTML = value.startsWith('4') ? visaLogo : '';
+    });
+
+    cardExpiryInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '').substring(0, 4);
+        if (value.length > 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        e.target.value = value;
+    });
+
+    cardCvcInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').substring(0, 3);
+    });
+}
+
+function setupPaymentMethodToggle() {
+    const cardRadio = document.getElementById('payment_card');
+    const pixRadio = document.getElementById('payment_pix');
+    const cardInfo = document.getElementById('credit-card-info');
+    
+    if(!cardRadio) return; // Só executa se estiver na página
+
+    cardRadio.addEventListener('change', () => {
+        if(cardRadio.checked) cardInfo.style.display = 'block';
+    });
+    pixRadio.addEventListener('change', () => {
+        if(pixRadio.checked) cardInfo.style.display = 'none';
+    });
+}
+
+
+// --- LÓGICA DE ORDEM E PAGAMENTO ---
+async function handlePlaceOrder(event) {
+    event.preventDefault();
+    
+    if (shippingCost <= 0) {
+        displayMessage('error', 'Por favor, calcule o frete antes de continuar.', 'checkout-message');
+        return;
+    }
+
+    const form = event.target;
+    const paymentMethod = form.querySelector('input[name="payment_method"]:checked').value;
+
+    if (paymentMethod === 'credit_card') {
+        const cardName = form.querySelector('#card-name').value;
+        if (!cardName) {
+            displayMessage('error', 'Por favor, preencha o nome no cartão.', 'checkout-message');
+            return;
+        }
+        submitOrder();
+    } else if (paymentMethod === 'pix') {
+        const pixModal = document.getElementById('pix-modal');
+        const loader = document.getElementById('pix-loader');
+        const qrCodeArea = document.getElementById('pix-qr-code-area');
+        
+        loader.style.display = 'block';
+        qrCodeArea.style.display = 'none';
+        pixModal.classList.add('show');
+
+        setTimeout(() => {
+            loader.style.display = 'none';
+            qrCodeArea.style.display = 'block';
+        }, 2000);
+    }
+}
+
+async function submitOrder() {
+    const form = document.getElementById('checkout-form');
+    const formData = new FormData(form);
+    const placeOrderBtn = document.getElementById('place-order-btn');
+
+    placeOrderBtn.disabled = true;
+    placeOrderBtn.textContent = 'Processando...';
+
+    try {
+        const response = await fetch('../backend/order.php', { method: 'POST', body: formData });
+        const result = await response.json();
+
+        if (result.success) {
+            // AQUI ESTÁ A MUDANÇA: Mostra o modal de sucesso
+            const successModal = document.getElementById('success-modal');
+            if (successModal) {
+                successModal.classList.add('show');
+            }
+            
+            // Redireciona para o histórico após 5 segundos
+            setTimeout(() => {
+                window.location.href = 'history.html';
+            }, 5000);
+
+        } else {
+            displayMessage('error', result.message || 'Erro ao finalizar o pedido.', 'global-message-container');
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.textContent = 'Efetuar Pagamento';
+        }
+    } catch (error) {
+        console.error('Erro ao finalizar pedido:', error);
+        displayMessage('error', 'Ocorreu um erro de comunicação.', 'global-message-container');
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.textContent = 'Efetuar Pagamento';
+    }
+}
+
+
+// --- FUNÇÕES GERAIS E DE PÁGINAS ---
+
+function createProductCardHTML(product) {
+    // CORREÇÃO APLICADA AQUI: Removido o "../" do início do caminho da imagem
+    return `
+        <div class="product-card" data-id="${product.id}">
+            <div class="product-image-container">
+                <a href="${product.image_url || 'images/placeholder.png'}" data-fancybox="gallery" data-caption="${product.name}">
+                    <img src="${product.image_url || 'images/placeholder.png'}" alt="${product.name}">
+                </a>
+            </div>
+            <div class="product-info">
+                <span class="product-category">${product.category_name}</span>
+                <h3>${product.name}</h3>
+                <p class="description">${product.description || 'Sem descrição disponível.'}</p>
+                <div class="product-footer">
+                    <p class="price">R$ ${parseFloat(product.price).toFixed(2).replace('.', ',')}</p>
+                    <button class="add-to-cart-btn" onclick="addToCart(${product.id}, 1)">
+                        <span class="icon">🛒</span> Adicionar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function loadOrderHistory() {
+    const container = document.getElementById('order-history-container');
+    if (!container) return;
+
+    try {
+        const response = await fetch('../backend/order_history.php');
+        const result = await response.json();
+
+        if (result.success) {
+            if (result.orders.length > 0) {
+                container.innerHTML = '';
+                result.orders.forEach(order => {
+                    const orderDate = new Date(order.order_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    let itemsHtml = '<ul class="order-items-list">';
+                    order.items.forEach(item => {
+                        // CORREÇÃO APLICADA AQUI: Removido o "../"
+                        itemsHtml += `
+                            <li>
+                                <img src="${item.image_url || 'images/placeholder.png'}" alt="${item.product_name}" class="item-thumbnail">
+                                <span>${item.product_name} (x${item.quantity})</span>
+                                <span>R$ ${parseFloat(item.price_at_purchase).toFixed(2).replace('.', ',')}</span>
+                            </li>`;
+                    });
+                    itemsHtml += '</ul>';
+                    container.innerHTML += `
+                        <div class="order-block">
+                            <div class="order-header">
+                                <h3>Pedido #${order.id}</h3>
+                                <span>Data: ${orderDate}</span>
+                                <span>Status: <strong>${order.status}</strong></span>
+                                <span>Total: <strong>R$ ${parseFloat(order.total_amount).toFixed(2).replace('.', ',')}</strong></span>
+                            </div>
+                            <div class="order-body">${itemsHtml}</div>
+                        </div>`;
+                });
+            } else {
+                container.innerHTML = '<p>Você ainda não fez nenhum pedido.</p>';
+            }
+        } else {
+            if (result.redirect) setTimeout(() => { window.location.href = result.redirect; }, 3000);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+    }
+}
+
+function displayMessage(type, text, containerId) {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.innerHTML = `<div class="message ${type}">${text}</div>`;
+        setTimeout(() => { container.innerHTML = '' }, 5000);
+    }
+}
+
 function updateNav() {
     const navUser = document.getElementById('nav-user');
     const navAuth = document.getElementById('nav-auth');
     const userNameSpan = document.getElementById('user-name');
-
-    // Checar se o usuário está logado (pode ser via localStorage ou um ping rápido ao backend)
-    // Para este exemplo, vamos assumir que o backend/login.php define $_SESSION
-    // e podemos ter um endpoint simples para checar a sessão.
-    // Por ora, vamos simular com localStorage após o login bem-sucedido.
-
-    const loggedInUser = localStorage.getItem('loggedInUser'); // Simples, melhore com session check
+    const loggedInUser = localStorage.getItem('loggedInUser'); 
 
     if (loggedInUser) {
-        if (navUser) navUser.style.display = 'inline';
+        // AQUI ESTÁ A MUDANÇA
+        if (navUser) navUser.style.display = 'inline-flex'; 
         if (navAuth) navAuth.style.display = 'none';
         if (userNameSpan) userNameSpan.textContent = JSON.parse(loggedInUser).name;
     } else {
@@ -74,25 +302,18 @@ async function handleRegister(event) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
-    const messageContainer = document.getElementById('register-message'); // Específico para o form
-
+    const messageContainer = document.getElementById('register-message');
     try {
-        const response = await fetch('../backend/register.php', {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('../backend/register.php', { method: 'POST', body: formData });
         const result = await response.json();
-
         if (result.success) {
             displayMessage('success', result.message, 'register-message');
-            form.reset();
             setTimeout(() => { window.location.href = 'login.html'; }, 2000);
         } else {
             displayMessage('error', result.message || 'Erro no cadastro.', 'register-message');
         }
     } catch (error) {
-        console.error('Erro no fetch do cadastro:', error);
-        displayMessage('error', 'Ocorreu um erro na comunicação. Tente novamente.', 'register-message');
+        displayMessage('error', 'Ocorreu um erro na comunicação.', 'register-message');
     }
 }
 
@@ -101,316 +322,169 @@ async function handleLogin(event) {
     const form = event.target;
     const formData = new FormData(form);
     const messageContainer = document.getElementById('login-message');
-
     try {
-        const response = await fetch('../backend/login.php', {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('../backend/login.php', { method: 'POST', body: formData });
         const result = await response.json();
-
         if (result.success) {
-            displayMessage('success', result.message, 'login-message');
-            // Armazenar info do usuário (simplificado, idealmente usar tokens/sessões mais robustas)
             localStorage.setItem('loggedInUser', JSON.stringify(result.user));
-            localStorage.setItem('isLoggedIn', 'true'); // Flag simples
+            localStorage.setItem('isLoggedIn', 'true');
             updateNav();
-            setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+            window.location.href = 'index.html';
         } else {
             displayMessage('error', result.message || 'Erro no login.', 'login-message');
-            localStorage.removeItem('loggedInUser');
-            localStorage.removeItem('isLoggedIn');
         }
     } catch (error) {
-        console.error('Erro no fetch do login:', error);
-        displayMessage('error', 'Ocorreu um erro na comunicação. Tente novamente.', 'login-message');
+        displayMessage('error', 'Ocorreu um erro na comunicação.', 'login-message');
     }
 }
 
-function handleLogout() {
-    // Limpar dados de login do localStorage
+function handleLogout(event) {
+    if(event) event.preventDefault();
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('isLoggedIn');
-    // O backend/logout.php já destrói a sessão PHP.
-    // Apenas redirecionar após limpar o localStorage.
-    window.location.href = '../backend/logout.php'; // O PHP cuidará do redirecionamento final
+    window.location.href = '../backend/logout.php';
 }
 
+async function loadFeaturedProducts() {
+    const featuredGrid = document.querySelector('.products-preview-grid');
+    if (!featuredGrid) return;
+    try {
+        const response = await fetch(`backend/products.php`);
+        const result = await response.json();
+        if (result.success && result.products.length > 0) {
+            featuredGrid.innerHTML = '';
+            result.products.slice(0, 4).forEach(product => {
+                featuredGrid.innerHTML += createProductCardHTML(product);
+            });
+            if(typeof Fancybox !== 'undefined') Fancybox.bind("[data-fancybox='gallery']");
+        }
+    } catch (error) { console.error('Erro ao buscar produtos em destaque:', error); }
+}
 
 async function loadProducts(category = 'todos') {
     const productsGrid = document.getElementById('products-grid');
-    const loadingMessage = document.getElementById('loading-message');
-
     if (!productsGrid) return;
-    if(loadingMessage) loadingMessage.style.display = 'block';
-    productsGrid.innerHTML = ''; // Limpar produtos antigos
-
+    productsGrid.innerHTML = '<p>Carregando produtos...</p>';
     try {
         const response = await fetch(`../backend/products.php?category=${encodeURIComponent(category)}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
         const result = await response.json();
-
-        if (loadingMessage) loadingMessage.style.display = 'none';
-
         if (result.success && result.products.length > 0) {
+            productsGrid.innerHTML = '';
             result.products.forEach(product => {
-                const card = `
-                    <div class="product-card" data-id="${product.id}">
-                        <a href="${product.image_url || 'images/placeholder.png'}" data-fancybox="gallery" data-caption="${product.name}">
-                            <img src="${product.image_url || 'images/placeholder.png'}" alt="${product.name}">
-                        </a>
-                        <h3>${product.name}</h3>
-                        <p class="price">R$ ${parseFloat(product.price).toFixed(2).replace('.', ',')}</p>
-                        <p class="description">${product.description || 'Sem descrição.'}</p>
-                        <p><small>Categoria: ${product.category_name}</small></p>
-                        <button onclick="addToCart(${product.id}, 1)">Adicionar ao Carrinho</button>
-                    </div>
-                `;
-                productsGrid.innerHTML += card;
+                productsGrid.innerHTML += createProductCardHTML(product);
             });
-
-            // --- NOVA LINHA ADICIONADA ---
-            // Avisa a Fancybox para encontrar e ativar todos os novos links de imagem que acabamos de adicionar.
-            Fancybox.bind("[data-fancybox='gallery']", {
-                // Aqui você pode adicionar opções de customização se quiser no futuro
-            });
-            // --- FIM DA NOVA LINHA ---
-
-        } else if (result.products.length === 0) {
-            productsGrid.innerHTML = '<p>Nenhum produto encontrado para esta categoria.</p>';
+            if(typeof Fancybox !== 'undefined') Fancybox.bind("[data-fancybox='gallery']");
         } else {
-            productsGrid.innerHTML = `<p>Erro ao carregar produtos: ${result.message || 'Tente novamente mais tarde.'}</p>`;
+            productsGrid.innerHTML = '<p>Nenhum produto encontrado para esta categoria.</p>';
         }
-    } catch (error) {
-        console.error('Erro ao buscar produtos:', error);
-        if (loadingMessage) loadingMessage.style.display = 'none';
-        productsGrid.innerHTML = `<p>Ocorreu um erro ao carregar os produtos. Verifique sua conexão ou tente mais tarde. (${error.message})</p>`;
-    }
+    } catch (error) { console.error('Erro ao buscar produtos:', error); }
 }
 
 async function addToCart(productId, quantity = 1) {
-    // Verificar se o usuário está logado (usando o flag do localStorage como exemplo)
     if (localStorage.getItem('isLoggedIn') !== 'true') {
-        displayMessage('error', 'Você precisa estar logado para adicionar itens ao carrinho. <a href="login.html">Faça login</a>', 'global-message-container'); // Adicione um div no seu HTML principal
-        // Alternativamente, redirecione: window.location.href = 'login.html';
+        displayMessage('error', 'Você precisa estar logado para adicionar itens ao carrinho. <a href="login.html">Faça login</a>', 'global-message-container');
         return;
     }
-
     const formData = new FormData();
     formData.append('product_id', productId);
     formData.append('quantity', quantity);
-
     try {
-        const response = await fetch('../backend/cart_add.php', {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('../backend/cart_add.php', { method: 'POST', body: formData });
         const result = await response.json();
-
         if (result.success) {
             displayMessage('success', result.message || 'Produto adicionado!', 'global-message-container');
-            // Opcional: atualizar contador do carrinho no header
         } else {
-            if (result.redirect) {
-                displayMessage('error', `${result.message} <a href="${result.redirect}">Faça login</a>`, 'global-message-container');
-                // window.location.href = result.redirect;
-            } else {
-                displayMessage('error', result.message || 'Erro ao adicionar ao carrinho.', 'global-message-container');
-            }
+            displayMessage('error', result.message, 'global-message-container');
         }
-    } catch (error) {
-        console.error('Erro ao adicionar ao carrinho:', error);
-        displayMessage('error', 'Erro de comunicação ao adicionar ao carrinho.', 'global-message-container');
-    }
+    } catch (error) { console.error('Erro ao adicionar ao carrinho:', error); }
 }
 
 async function loadCart() {
     const cartItemsContainer = document.getElementById('cart-items-container');
-    const cartSummary = document.getElementById('cart-summary');
+    const cartSummaryContainer = document.getElementById('cart-summary');
     const emptyCartMessage = document.getElementById('empty-cart-message');
-    const checkoutBtn = document.getElementById('checkout-btn');
+    const cartLayout = document.querySelector('.cart-layout');
 
-    if (!cartItemsContainer || !cartSummary) return;
+    if (!cartItemsContainer) return;
 
     try {
         const response = await fetch('../backend/cart_view.php');
         const result = await response.json();
-
-        cartItemsContainer.innerHTML = ''; // Limpar antes de popular
-
-        if (result.success) {
-            if (result.cart_items && result.cart_items.length > 0) {
-                if(emptyCartMessage) emptyCartMessage.style.display = 'none';
-                if(checkoutBtn) checkoutBtn.style.display = 'inline-block';
-
-                result.cart_items.forEach(item => {
-                    const itemElement = `
-                        <div class="cart-item" data-product-id="${item.product_id}">
-                            <img src="${item.image_url || 'images/placeholder.png'}" alt="${item.name}">
-                            <div class="cart-item-info">
-                                <h4>${item.name}</h4>
-                                <p>Preço: R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</p>
-                                <p>Quantidade: ${item.quantity}</p>
-                                <p>Subtotal: R$ ${parseFloat(item.subtotal).toFixed(2).replace('.', ',')}</p>
-                            </div>
-                            <div class="cart-item-actions">
-                                <button onclick="removeFromCart(${item.product_id})">Remover</button>
-                            </div>
+        if (result.success && result.cart_items && result.cart_items.length > 0) {
+            if (emptyCartMessage) emptyCartMessage.style.display = 'none';
+            if (cartLayout) cartLayout.style.display = 'grid';
+            cartItemsContainer.innerHTML = '';
+            result.cart_items.forEach(item => {
+                // CORREÇÃO APLICADA AQUI: Removido o "../"
+                cartItemsContainer.innerHTML += `
+                    <div class="cart-item" data-product-id="${item.product_id}">
+                        <img src="${item.image_url || 'images/placeholder.png'}" alt="${item.name}">
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4>
+                            <p>Preço Unitário: R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</p>
+                            <p>Subtotal: R$ ${parseFloat(item.subtotal).toFixed(2).replace('.', ',')}</p>
                         </div>
-                    `;
-                    cartItemsContainer.innerHTML += itemElement;
-                });
-                cartSummary.innerHTML = `<h3>Total do Carrinho: R$ ${parseFloat(result.total).toFixed(2).replace('.', ',')}</h3>`;
-            } else {
-                cartItemsContainer.innerHTML = ''; // Garantir que está limpo
-                if(emptyCartMessage) {
-                    emptyCartMessage.textContent = result.message || 'Seu carrinho está vazio.';
-                    emptyCartMessage.style.display = 'block';
-                }
-                cartSummary.innerHTML = '<h3>Total do Carrinho: R$ 0,00</h3>';
-                if(checkoutBtn) checkoutBtn.style.display = 'none';
-            }
+                        <div class="cart-item-actions">
+                            <div class="quantity-selector">
+                                <button class="quantity-btn" onclick="updateCartQuantity(${item.product_id}, ${item.quantity - 1})">-</button>
+                                <input type="number" class="quantity-input" value="${item.quantity}" min="0" onchange="updateCartQuantity(${item.product_id}, this.value)">
+                                <button class="quantity-btn" onclick="updateCartQuantity(${item.product_id}, ${item.quantity + 1})">+</button>
+                            </div>
+                            <button class="remove-btn" onclick="updateCartQuantity(${item.product_id}, 0)">Remover</button>
+                        </div>
+                    </div>`;
+            });
+            cartSubtotal = parseFloat(result.total);
+            if (cartSummaryContainer) cartSummaryContainer.innerHTML = `<h3>Total: R$ ${cartSubtotal.toFixed(2).replace('.', ',')}</h3>`;
         } else {
-             if (result.redirect) {
-                displayMessage('error', `${result.message} <a href="${result.redirect}">Faça login</a>`, 'global-message-container');
-                setTimeout(() => { window.location.href = result.redirect; }, 3000);
-            } else {
-                cartItemsContainer.innerHTML = `<p class="message error">${result.message || 'Erro ao carregar o carrinho.'}</p>`;
+            if (emptyCartMessage) {
+                emptyCartMessage.innerHTML = `<p>${result.message || 'Seu carrinho está vazio.'}</p><a href="products.html" class="cta-button" style="margin-top:20px;">Ver Produtos</a>`;
+                emptyCartMessage.style.display = 'block';
             }
+            if (cartLayout) cartLayout.style.display = 'none';
         }
-    } catch (error) {
-        console.error('Erro ao carregar carrinho:', error);
-        cartItemsContainer.innerHTML = '<p class="message error">Erro de comunicação ao carregar o carrinho.</p>';
-    }
+    } catch (error) { console.error('Erro ao carregar carrinho:', error); }
 }
 
-async function removeFromCart(productId) {
-    if (!confirm('Tem certeza que deseja remover este item do carrinho?')) {
+async function updateCartQuantity(productId, newQuantity) {
+    const quantity = parseInt(newQuantity);
+    if (isNaN(quantity) || quantity < 0) return;
+    if (quantity === 0 && !confirm('Deseja remover este item do carrinho?')) {
+        loadCart();
         return;
     }
-
     const formData = new FormData();
     formData.append('product_id', productId);
-
+    formData.append('quantity', quantity);
     try {
-        const response = await fetch('../backend/cart_remove.php', {
-            method: 'POST', // Ou 'GET' se você configurou o backend/cart_remove.php para aceitar GET
-            body: formData
-        });
+        const response = await fetch('../backend/cart_update.php', { method: 'POST', body: formData });
         const result = await response.json();
-
-        if (result.success) {
-            displayMessage('success', result.message || 'Item removido!', 'global-message-container');
-            loadCart(); // Recarrega o carrinho para mostrar as mudanças
-        } else {
-            displayMessage('error', result.message || 'Erro ao remover item.', 'global-message-container');
-        }
-    } catch (error) {
-        console.error('Erro ao remover do carrinho:', error);
-        displayMessage('error', 'Erro de comunicação ao remover item.', 'global-message-container');
-    }
+        if (result.success) loadCart();
+        else displayMessage('error', result.message || 'Erro ao atualizar.', 'global-message-container');
+    } catch (error) { console.error('Erro ao atualizar quantidade:', error); }
 }
-
 
 async function checkSessionAndLoadCheckout() {
-    const checkoutFormContainer = document.getElementById('checkout-form-container'); // Div que engloba o formulário
-    const orderSummaryContainer = document.getElementById('order-summary-items');
-    const summaryTotalElement = document.getElementById('summary-total');
-    const globalMessageContainer = document.getElementById('global-message-container'); // Para mensagens de erro de sessão
-
     try {
-        // 1. Verificar sessão no backend
-        const sessionResponse = await fetch('../backend/checkout.php'); // Endpoint que verifica a sessão
+        const sessionResponse = await fetch('../backend/checkout.php');
         const sessionResult = await sessionResponse.json();
-
         if (!sessionResult.success) {
-            if (globalMessageContainer) displayMessage('error', `${sessionResult.message} <a href="${sessionResult.redirect || 'login.html'}">Faça login</a>`, 'global-message-container');
-            if (checkoutFormContainer) checkoutFormContainer.innerHTML = `<p>Você precisa estar logado para acessar esta página.</p>`;
-            // Opcional: redirecionar após um tempo
-            if (sessionResult.redirect) {
-                 setTimeout(() => { window.location.href = sessionResult.redirect; }, 3000);
-            }
-            return; // Interrompe a execução se não estiver logado
+            document.getElementById('checkout-form-container').innerHTML = `<p>Você precisa estar logado para finalizar a compra. <a href="login.html">Faça login</a>.</p>`;
+            return;
         }
 
-        // 2. Se logado, carregar o resumo do pedido (itens do carrinho)
         const cartResponse = await fetch('../backend/cart_view.php');
         const cartResult = await cartResponse.json();
-
         if (cartResult.success && cartResult.cart_items && cartResult.cart_items.length > 0) {
-            if (orderSummaryContainer) orderSummaryContainer.innerHTML = ''; // Limpar
+            const summaryContainer = document.getElementById('order-summary-items');
+            summaryContainer.innerHTML = '';
             cartResult.cart_items.forEach(item => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `<span>${item.name} (x${item.quantity})</span> <span>R$ ${parseFloat(item.subtotal).toFixed(2).replace('.', ',')}</span>`;
-                if (orderSummaryContainer) orderSummaryContainer.appendChild(listItem);
+                summaryContainer.innerHTML += `<li><span>${item.name} (x${item.quantity})</span> <span>R$ ${parseFloat(item.subtotal).toFixed(2).replace('.', ',')}</span></li>`;
             });
-            if (summaryTotalElement) summaryTotalElement.textContent = `Total: R$ ${parseFloat(cartResult.total).toFixed(2).replace('.', ',')}`;
-
-            // Habilitar o formulário de checkout se ele estava escondido/desabilitado
-             if (checkoutFormContainer) checkoutFormContainer.style.display = 'block';
-
+            cartSubtotal = parseFloat(cartResult.total);
+            updateTotals();
         } else {
-            if (checkoutFormContainer) checkoutFormContainer.innerHTML = '<p>Seu carrinho está vazio. Adicione itens antes de finalizar a compra. <a href="products.html">Ver produtos</a></p>';
-            if (orderSummaryContainer) orderSummaryContainer.innerHTML = '';
-            if (summaryTotalElement) summaryTotalElement.textContent = 'Total: R$ 0,00';
+            document.getElementById('checkout-form-container').innerHTML = '<div style="text-align: center;"><p>Seu carrinho está vazio.</p><a href="products.html" class="cta-button">Ver produtos</a></div>';
         }
-
-    } catch (error) {
-        console.error('Erro ao carregar página de checkout:', error);
-        if (globalMessageContainer) displayMessage('error', 'Erro ao carregar informações para o checkout. Tente novamente.', 'global-message-container');
-        if (checkoutFormContainer) checkoutFormContainer.innerHTML = '<p>Ocorreu um erro. Por favor, tente recarregar a página.</p>';
-    }
-}
-
-async function handlePlaceOrder(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form); // Coleta dados do formulário (endereço, etc.)
-    const messageContainer = document.getElementById('checkout-message'); // Específico para o form de checkout
-
-    // Adicionar validações de formulário de checkout aqui (endereço, etc.) antes de enviar
-    // Ex: const address = formData.get('address'); if (!address) { displayMessage(...); return; }
-
-    try {
-        const response = await fetch('../backend/order.php', {
-            method: 'POST',
-            body: formData // Envia os dados do formulário de checkout (se houver)
-        });
-        const result = await response.json();
-
-        if (result.success) {
-            displayMessage('success', result.message, 'checkout-message');
-            // Limpar formulário, localStorage de carrinho se necessário, redirecionar para uma página de "pedido concluído"
-            form.reset(); // Limpa o formulário de checkout
-            // Idealmente, redirecionar para uma página de confirmação do pedido.
-            // Ex: window.location.href = `order_confirmation.html?order_id=${result.orderId}`;
-            // Por agora, vamos apenas mostrar a mensagem e limpar o carrinho visualmente (o backend já limpou)
-            if (document.getElementById('order-summary-items')) document.getElementById('order-summary-items').innerHTML = '';
-            if (document.getElementById('summary-total')) document.getElementById('summary-total').textContent = 'Total: R$ 0,00';
-            document.getElementById('checkout-form-inputs').style.display = 'none'; // Esconde os inputs do form
-            // Você pode querer desabilitar o botão de "Finalizar Compra" aqui também.
-
-        } else {
-            if (result.redirect) { // Se a sessão expirou ou algo assim
-                displayMessage('error', `${result.message} <a href="${result.redirect}">Faça login</a>`, 'checkout-message');
-                 setTimeout(() => { window.location.href = result.redirect; }, 3000);
-            } else {
-                displayMessage('error', result.message || 'Erro ao finalizar o pedido.', 'checkout-message');
-            }
-        }
-    } catch (error) {
-        console.error('Erro ao finalizar pedido:', error);
-        displayMessage('error', 'Ocorreu um erro de comunicação ao finalizar o pedido.', 'checkout-message');
-    }
-}
-
-// Adicione um listener para o botão de logout se ele existir no header
-const logoutButton = document.getElementById('logout-button');
-if (logoutButton) {
-    logoutButton.addEventListener('click', (e) => {
-        e.preventDefault(); // Previne o comportamento padrão do link se for um <a>
-        handleLogout();
-    });
+    } catch (error) { console.error('Erro ao carregar checkout:', error); }
 }

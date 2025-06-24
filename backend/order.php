@@ -44,9 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // 2. Criar o pedido na tabela `orders`
-        $sql_order = "INSERT INTO orders (user_id, total_amount, status) VALUES (:user_id, :total_amount, 'Pendente')";
-        $stmt_order = $pdo->prepare($sql_order);
-        $stmt_order->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+      $sql_order = "INSERT INTO orders (user_id, total_amount, status) VALUES (:user_id, :total_amount, 'Em preparação')";  $stmt_order->bindParam(':user_id', $user_id, PDO::PARAM_INT);
         $stmt_order->bindParam(':total_amount', $total_amount, PDO::PARAM_STR);
         $stmt_order->execute();
         $order_id = $pdo->lastInsertId(); // Pegar o ID do pedido recém-criado

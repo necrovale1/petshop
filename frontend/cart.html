@@ -1,46 +1,43 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
+            <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seu Carrinho - PetShop Online</title>
-    <link rel="stylesheet" href="css/style.css">
+     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
+
+    </head>
 <body>
     <header>
         <h1>Seu Carrinho de Compras <span class="icon">🛒</span></h1>
         <nav>
-            <ul>
-                <li><a href="index.html">Início</a></li>
-                <li><a href="products.html">Produtos</a></li>
-                <li><a href="cart.html">🛒 Carrinho</a></li>
-                 <li id="nav-auth">
-                    <a href="login.html">Login</a> | <a href="register.html">Cadastro</a>
-                </li>
-                <li id="nav-user" style="display: none;">
-                    Olá, <span id="user-name"></span>! | <a href="#" id="logout-button">Logout</a>
-                </li>
-            </ul>
-        </nav>
+             </nav>
     </header>
 
     <div class="container">
         <div id="global-message-container"></div>
-        <h2>Itens no seu carrinho:</h2>
+        
         <div id="empty-cart-message" style="display: none; text-align: center; padding: 40px; background-color: white; border-radius: var(--border-radius); box-shadow: var(--box-shadow);">Seu carrinho está vazio.</div>
-        <div id="cart-items-container">
+
+        <div class="cart-layout">
+            <div id="cart-items-column">
+                <h2>Itens no seu carrinho:</h2>
+                <div id="cart-items-container">
+                    </div>
             </div>
 
-        <div id="cart-summary" style="display: none;">
-            <h3>Total do Carrinho: R$ 0,00</h3>
-        </div>
-
-        <div style="text-align: right; margin-top: 20px;">
-            <a href="checkout.html" id="checkout-btn" class="cta-button" style="display: none;">Finalizar Compra</a>
-        </div>
-         <div style="text-align: center; margin-top: 20px;">
-            <a href="products.html" style="color: var(--primary-color); font-weight: 500;">&larr; Continuar comprando</a>
+            <div id="cart-summary-column">
+                <div class="summary-box">
+                    <h2>Resumo da Compra</h2>
+                    <div id="cart-summary">
+                        </div>
+                    <div class="checkout-actions">
+                        <a href="checkout.html" id="checkout-btn" class="cta-button" style="width: 100%;">Finalizar Compra</a>
+                        <a href="products.html" class="continue-shopping-link">Continuar comprando</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
