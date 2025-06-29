@@ -1,4 +1,4 @@
-# 🐾 Projeto PetShop - PW2
+# 🐾 Projeto PetShop Natural - PW2
 
 * 📚 **Disciplina**: Programação Web 2
 * 👨‍🏫 **Professores**: Thiago e Caê
